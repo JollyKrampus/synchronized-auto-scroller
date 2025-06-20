@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Scroll Controller</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 2rem;
+            max-width: 600px;
+            margin: auto;
+        }
+
+        label,
+        select {
+            display: block;
+            margin-bottom: 1rem;
+        }
+
+        button {
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        #duration-display {
+            margin-bottom: 2rem;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Scroll Controller</h1>
+
+    <label for="song">Select Song:</label>
+    <select id="song">
+        <option value="flowers">Flowers – A Day to Remember</option>
+        <option value="lola">Lola Montez – Volbeat</option>
+    </select>
+
+    <div id="duration-display">Duration: 3:21</div>
+
+    <button id="startBtn">Start Scroll</button>
+
+    <script>
+        const ws = new WebSocket(`ws://${location.host}`);
+        const startBtn = document.getElementById("startBtn");
+        const songSelector = document.getElementById("song");
+        const durationDisplay = document.getElementById("duration-display");
+
+        const scrollDurations = {
+            flowers: 201, // 3:21
+            lola: 269     // 4:29
+        };
+
+        const scrollDurationsFormatted = {
+            flowers: "3:21",
+            lola: "4:29"
+        };
+
+        songSelector.addEventListener("change", () => {
+            const song = songSelector.value;
+            durationDisplay.textContent = `Duration: ${scrollDurationsFormatted[song]}`;
+        });
+
+        startBtn.addEventListener("click", () => {
+            const song = songSelector.value;
+            const duration = scrollDurations[song];
+
+            if (!ws || ws.readyState !== WebSocket.OPEN) {
+                alert("WebSocket not connected!");
+                return;
+            }
+
+            const delayMs = 2000;
+            const startTime = Date.now() + delayMs;
+
+            ws.send(JSON.stringify({
+                action: "start",
+                duration: duration,
+                song: song,
+                startAt: startTime
+            }));
+        });
+    </script>
+</body>
+
+</html>
